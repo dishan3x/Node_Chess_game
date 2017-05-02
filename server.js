@@ -8,13 +8,14 @@ var fs = require('fs');
 var http = require('http');
 var encryption = require('./lib/encryption');
 var urlencoded = require('./lib/form-urlencoded');
-var io = require('socket.io')(server);
 var parseCookie = require('./lib/cookie-parser');
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.Database('scrumtastic.sqlite3', function(err) {
   if(err) console.error(err);
 });
 var server = new http.Server(handleRequest);
+var io = require('socket.io')(server);
+
 
 // setup the websockets
 var connected = 0;
@@ -153,6 +154,8 @@ if(cookie) {
     case '/index.html':
       serveFile('public/index.html', 'text/html', req, res);
       break;
+  //  case '/socket.io/socket.io.js':
+  //      serverFile('');
     case '/login.css':
       serveFile('public/login.css', 'text/css', req, res);
       break;
