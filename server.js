@@ -13,6 +13,7 @@ var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.Database('scrumtastic.sqlite3', function(err) {
   if(err) console.error(err);
 });
+var router = new (require('./lib/route')).Router(db);
 var server = new http.Server(handleRequest);
 var io = require('socket.io')(server);
 
@@ -39,6 +40,15 @@ io.on('connection', function(socket) {
 
     socket.emit('welcome', "Welcome, " + name + "!");
 });
+
+//serving image
+router.get('/images/:filename',function(req, res){
+	//console.log(req.param.filename);
+    fs.readFile('images/' + req.params.filename, function(err, body){
+      res.setHeader('Content-Type', 'image/png');
+      res.end(body);
+    });
+}); 
 
 /** @function serveFile
  * Serves a static file resource
@@ -175,8 +185,7 @@ if(cookie) {
       serveFile('public/chess_game.js',"text/js", req, res);
       break;
     default:
-      res.statusCode = 404;
-      res.end("Not found");
+		router.route(req,res);
   }
 
 }
