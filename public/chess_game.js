@@ -1,4 +1,5 @@
 $(function(){
+// This basically  keep track of the io port and the chat	
 var socket = io();
 
 socket.on('welcome', function(text) {

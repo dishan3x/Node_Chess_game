@@ -16,7 +16,7 @@ var db = new sqlite3.Database('scrumtastic.sqlite3', function(err) {
 var router = new (require('./lib/route')).Router(db);
 var server = new http.Server(handleRequest);
 var io = require('socket.io')(server);
-
+var car = require('./src/resource/player');
 
 // setup the websockets
 var connected = 0;
@@ -190,7 +190,22 @@ if(cookie) {
 
 }
 
-//Start the server
-server.listen(PORT, function(){
-  console.log("Listening on port", PORT);
+
+var player = require('./src/resource/player');
+
+router.resource('/players', player); //New routing
+
+var migrate = require('./lib/migrate');
+
+
+migrate(db, 'migrations', function(err){
+	console.log("arrive to migrate");
+ // var server = new http.Server(function(req, res) {
+ //   router.route(req, res);
+ // });
+  server.listen(PORT, function(){
+    console.log("listening on port " + PORT);
+  });
+
+
 });
