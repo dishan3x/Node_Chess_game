@@ -4,6 +4,8 @@
  * @param {http.serverResponse} res - the response object
  * @param {sqlite3.Database} db - the database object
  */
+var encryption = require('./lib/encryption');
+ 
 function list(req, res, db) {
   db.all("SELECT * FROM cars", [], function(err, cars){
     if(err) {
@@ -24,12 +26,9 @@ function list(req, res, db) {
  */
 function create(req, res, db) {
 
-
 //var  jsonData = JSON.stringify({filename:req.body.image.filename,carName:req.body.carName,year:req.body.year,description:req.body.description});
-
-    multipart(req, res, function(req, res){
-
-db.run("INSERT INTO cars (name, brand, year, description) VALUES (?,?,?,?)",
+ multipart(req, res, function(req, res){
+db.run("INSERT INTO player (name, brand, year, description) VALUES (?,?,?,?)",
 [req.body.image.filename,req.body.carName, req.body.year, req.body.description],
  function(err) {
 if(err) {
@@ -51,7 +50,8 @@ res.end("Server Error");
 return;
  }
   });// end of mulitipart
-});
+}); 
+
 }
 
 /** @function read

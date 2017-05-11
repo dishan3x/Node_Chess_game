@@ -6,6 +6,7 @@ const PORT = 3040;
 //global variables
 var fs = require('fs');
 var http = require('http');
+var express = require('express');
 var encryption = require('./lib/encryption');
 var urlencoded = require('./lib/form-urlencoded');
 var parseCookie = require('./lib/cookie-parser');
@@ -14,6 +15,7 @@ var db = new sqlite3.Database('scrumtastic.sqlite3', function(err) {
   if(err) console.error(err);
 });
 var router = new (require('./lib/route')).Router(db);
+router = express();
 var server = new http.Server(handleRequest);
 var io = require('socket.io')(server);
 var car = require('./src/resource/player');
@@ -41,6 +43,8 @@ io.on('connection', function(socket) {
     socket.emit('welcome', "Welcome, " + name + "!");
 });
 
+router.use(express.static('public'));
+
 //serving image
 router.get('/images/:filename',function(req, res){
 	//console.log(req.param.filename);
@@ -48,7 +52,7 @@ router.get('/images/:filename',function(req, res){
       res.setHeader('Content-Type', 'image/png');
       res.end(body);
     });
-}); 
+});
 
 /** @function serveFile
  * Serves a static file resource
@@ -156,13 +160,17 @@ if(cookie) {
     case '/register.html':
       if (req.method == 'GET') {
         serveFile('public/register.html', 'text/html', req, res);
-      }
-      else if (req.method == 'POST') {
-        //Create new user
+		console.log('arrive to get of register file');
       }
       break;
     case '/index.html':
-      serveFile('public/index.html', 'text/html', req, res);
+      serveFile('public/chessboardjs-0.3.0/index.html', 'text/html', req, res);
+      break;
+    case '/chessboard-0.3.0-min.js':
+      serveFile('public/chessboardjs-0.3.0/chessboard-0.3.0-min.js', 'text/js', req, res);
+      break;
+    case '/chessboard-0.3.0-min.css':
+      serveFile('public/chessboardjs-0.3.0/css/chessboard-0.3.0-min.css', 'text/css', req, res);
       break;
   //  case '/socket.io/socket.io.js':
   //      serverFile('');
@@ -179,13 +187,14 @@ if(cookie) {
      serveFile('public/indexStyle.css', 'text/css', req, res);
      break;
     case '/indexScript.js':
-     serveFile('public/indexScript.js', 'text/css', req, res);
+     serveFile('public/chessboardjs-0.3.0/indexScript.js', 'text/css', req, res);
      break;
      case '/chess_game.js':
       serveFile('public/chess_game.js',"text/js", req, res);
       break;
     default:
-		router.route(req,res);
+		router(req,res);
+		console.log("came to router");
   }
 
 }
@@ -193,7 +202,16 @@ if(cookie) {
 
 var player = require('./src/resource/player');
 
-router.resource('/players', player); //New routing
+//router.resource('/players', player); //New routing
+
+var route = '/players';
+
+if(player.list) router.get(route, function(req, res) {player.list(req, res, db)});
+if(player.create) router.post(route, function(req, res) {player.create(req, res, db)});
+if(player.read) router.get(route + '/:id', function(req, res) {player.read(req, res, db)});
+if(player.edit) router.get(route + '/:id/edit', function(req, res) {player.read(req, res, db)});
+if(player.update) router.post(route + '/:id', function(req, res) {player.update(req, res, db)});
+if(player.destroy) router.get(route + '/:id/destroy', function(req, res) {player.destroy(req, res, db)});
 
 var migrate = require('./lib/migrate');
 
